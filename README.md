@@ -2,7 +2,8 @@
 
 ### Preparation
 
-Go to Script folder and runs sh script, it will start a docker container with a proper settings
+* Make sure https://jsonplaceholder.typicode.com is available for you
+* Go to Script folder and run sh script, it will start MySql docker container with proper settings
 
 ### Api
 * Navigate to Api folder and run npm install

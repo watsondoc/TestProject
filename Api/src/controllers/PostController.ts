@@ -116,8 +116,8 @@ class PostController {
 
     if (query) {
       const likeSearch = { [Op.or]: [
-          { title: { [Op.like]: `%${query}%` } },
-          { body: { [Op.like]: `%${query}%` } }
+          { title: { [Op.like]: `%${query.toLowerCase()}%` } },
+          { body: { [Op.like]: `%${query.toLowerCase()}%` } }
         ]}
       where[Op.and].push(likeSearch);
     }

@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import { UserDto } from '../models/UserModel';
 import axios from 'axios';
 import { ITEMS_PER_PAGE, Options, SortDirection } from '../types';
-// import { UserDefinition } from '../storage/User';
 
 const REMOTE_USER_API_URL = 'https://jsonplaceholder.typicode.com/users';
 
@@ -50,7 +49,7 @@ class UserController {
   }
 }
 
-// TODO: seems this logic is redundant, due to no the task definition
+// TODO: seems this logic is redundant, due to no requirements in the task definition for storing users in DB
 /*
 export async function getAllUsers(req: Request, res: Response): Promise<void> {
   try {

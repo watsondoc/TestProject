@@ -13,7 +13,7 @@ export const PostDefinition = modelMapper.define('posts', {
   userId: {
     type: Sequelize.INTEGER,
     allowNull: false,
-/*    references: {
+    /*references: {
       model: UserDefinition,
       key: 'id',
     },*/
