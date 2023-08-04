@@ -3,32 +3,36 @@ import { PostDto } from '../models/PostModel';
 import { PostDefinition } from '../storage/Post';
 import axios from 'axios';
 import { ITEMS_PER_PAGE, Options } from '../types';
+const { Op } = require("sequelize");
 
 const REMOTE_API_URL = 'https://jsonplaceholder.typicode.com/posts';
 
 class PostController {
   async getPostsByUserId(req: Request, res: Response): Promise<void> {
     const userId = parseInt(req.params.userId, 10);
+
     if (isNaN(userId)) {
       res.status(400).json({ error: 'Invalid userId' });
     }
 
-    const page = parseInt(req.query.page as string, 10) || 1;
-    const offset = (page - 1) * ITEMS_PER_PAGE;
+    const page = parseInt(req.query.page as string, 10) || 0;
+    const perPage = parseInt(req.query.perPage as string, 10) || ITEMS_PER_PAGE;
+    const searchText =  req.query.searchText as string;
+    const offset = page * perPage;
 
     try {
-      const isPostsExists = await this.isPostExistsByUserId(userId);
-      if (isPostsExists) {
+      const postsCount = await this.getPostsCountByUserId(userId, searchText);
+      if (postsCount > 0) {
         const postsInstances = await this.getPostFromDb(
           userId,
-          { limit: ITEMS_PER_PAGE, offset: offset }
+          { limit: perPage, offset: offset, query: searchText }
         );
-        res.json(postsInstances);
-      } else {
-        const posts: PostDto[] = await this.fetchPostsByUserId(userId, {
-          offset,
-          limit: ITEMS_PER_PAGE
+        res.json({
+          posts: postsInstances,
+          totalPosts: postsCount,
         });
+      } else {
+        const posts: PostDto[] = await this.fetchPostsByUserId(userId);
         await this.populatePosts(posts);
         return this.getPostsByUserId(req, res);
       }
@@ -59,22 +63,19 @@ class PostController {
     }
   }
 
-  private async isPostExistsByUserId(userId: number): Promise<boolean> {
-    const postObject = await PostDefinition.findOne({
-      where: { userId },
-    });
+  private async getPostsCountByUserId(userId: number, query?: string): Promise<number> {
+    const where = this.buildWhereOption(userId, query);
+    const count = await PostDefinition.count({ where });
 
-    return postObject ? true : false;
+    return count;
   }
 
-  private async fetchPostsByUserId(userId: number, options: Options): Promise<PostDto[]> {
+  private async fetchPostsByUserId(userId: number): Promise<PostDto[]> {
     try {
       const response = await axios.get<PostDto[]>(REMOTE_API_URL,
         {
           params: {
             userId: userId,
-            _start: options.offset,
-            _limit: options.limit
           }
         });
       return response.data;
@@ -85,10 +86,10 @@ class PostController {
 
   private async getPostFromDb(userId: number, options: Options): Promise<PostDto[]> {
     try {
+      const where = this.buildWhereOption(userId, options.query);
+
       const posts = await PostDefinition.findAll({
-        where: {
-          userId,
-        },
+        where,
         limit: options.limit,
         offset: options.offset,
       });
@@ -104,6 +105,24 @@ class PostController {
     } catch (error) {
       throw new Error('Failed to fetch remote data from db');
     }
+  }
+
+  private buildWhereOption(userId: number, query?: string) {
+    const where: any = {
+      [Op.and]: [
+        { userId },
+      ]
+    };
+
+    if (query) {
+      const likeSearch = { [Op.or]: [
+          { title: { [Op.like]: `%${query}%` } },
+          { body: { [Op.like]: `%${query}%` } }
+        ]}
+      where[Op.and].push(likeSearch);
+    }
+
+    return where;
   }
 
   private async populatePosts(posts: PostDto[]) {
