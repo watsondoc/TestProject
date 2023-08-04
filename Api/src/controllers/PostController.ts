@@ -37,6 +37,28 @@ class PostController {
     }
   }
 
+  public async removePost(req: Request, res: Response) {
+    const userId = parseInt(req.params.userId, 10);
+    const postId = parseInt(req.params.postId, 10);
+
+    if (isNaN(userId) || isNaN(postId)) {
+      res.status(400).json({ error: 'Invalid userId' });
+    }
+
+    await this.removePostFromDb(userId, postId);
+    res.status(204).json({ message: 'success delete' });
+  }
+
+  private async removePostFromDb(userId: number, postId: number) {
+    const existingPost = await PostDefinition.findOne({
+      where: { userId, id: postId },
+    });
+
+    if (existingPost) {
+      return existingPost.destroy();
+    }
+  }
+
   private async isPostExistsByUserId(userId: number): Promise<boolean> {
     const postObject = await PostDefinition.findOne({
       where: { userId },
