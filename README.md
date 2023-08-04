@@ -2,7 +2,7 @@
 
 ### Preparation
 
-Go to Script folder and runs sh script, it will start a docker container with a proper settings
+Go to Script folder and runs sh script, it will start a MySql docker container with a proper settings
 
 ### Api
 * Navigate to Api folder and run npm install
