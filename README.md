@@ -21,6 +21,6 @@ It will start web service on localhost:3000
 Navigate to localhost:3000 in your browser
 
 ### other notes
-You can try to break the application via text filter, because there is no protection from sql injections, but I keep it in mind 
-Also you can try to break pagination by deleting entities from Posts table, but it looks not critical
+* You can try to break the application via text filter, because there is no protection from sql injections, but I keep it in mind 
+* Also you can try to break pagination by deleting entities from Posts table, but it looks not critical
 
